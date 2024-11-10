@@ -1,0 +1,66 @@
+package com.advento.jdbc;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+public class JdbcFirstPrgm {
+
+	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+		JdbcFirstPrgm jdbcFirstPrgm = new JdbcFirstPrgm();
+//		jdbcFirstPrgm.getAllEmps();
+		Emp[] empArr = jdbcFirstPrgm.getAllEmpsAndRetnArr();
+		Print print = new Print();
+		print.printObj(empArr);
+	}
+
+	public void getAllEmps() throws ClassNotFoundException, SQLException {
+		Class.forName("com.mysql.cj.jdbc.Driver");
+		Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/dbtraining", "root", "Venkat@00");
+		Statement stm = con.createStatement();
+		ResultSet res = stm.executeQuery("SELECT * FROM dbtraining.emp");
+		while (res.next()) {
+			int id = res.getInt("id");
+			String name = res.getString("first_name");
+			int age = res.getInt("age");
+			String email = res.getString("email");
+			System.out.println(id + " " + name + " " + age + " " + email);
+		}
+		if (con != null) {
+			con.close();
+		}
+	}
+
+	public Emp[] getAllEmpsAndRetnArr() throws ClassNotFoundException, SQLException {
+		Class.forName("com.mysql.cj.jdbc.Driver");
+		Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/dbtraining", "root", "Venkat@00");
+		Statement stm = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+			    ResultSet.CONCUR_READ_ONLY);
+		ResultSet res = stm.executeQuery("SELECT * FROM dbtraining.emp");
+		int rowSize = 0;
+		if (res.last()) {
+			rowSize = res.getRow();
+			res.beforeFirst();
+		}
+		Emp[] empArr = new Emp[rowSize];
+		int k = 0;
+		while (res.next()) {
+			int id = res.getInt("id");
+			String name = res.getString("first_name");
+			int age = res.getInt("age");
+			String email = res.getString("email");
+			Emp emp = new Emp();
+			emp.setId(id);
+			emp.setFirstName(name);
+			emp.setAge(age);
+			emp.setEmail(email);
+			empArr[k++] = emp;
+		}
+		if (con != null) {
+			con.close();
+		}
+		return empArr;
+	}
+}
